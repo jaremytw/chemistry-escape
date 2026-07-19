@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🔬 煉金術師的密室 — 化學密室逃脫（會考強化版）</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;700;900&family=MedievalSharp&display=swap');
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Noto Serif TC',serif;background:#0a0a0f;color:#e8dcc8;overflow-x:hidden;min-height:100vh;background-size:cover;background-position:center;background-attachment:fixed}
+.game-container{max-width:960px;margin:0 auto;min-height:100vh;position:relative}
+.scene{display:none;flex-direction:column;align-items:center;min-height:100vh;padding:20px;animation:fadeIn .8s ease}
+.scene.active{display:flex}
+@keyframes fadeIn{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+@keyframes pulse{0%,100%{text-shadow:0 0 10px #ffd700}50%{text-shadow:0 0 30px #ffd700,0 0 60px #ff8c00}}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+@keyframes glow{0%,100%{box-shadow:0 0 5px rgba(255,215,0,.3)}50%{box-shadow:0 0 20px rgba(255,215,0,.6),0 0 40px rgba(255,140,0,.3)}}
+@keyframes glowPurple{0%,100%{box-shadow:0 0 5px rgba(150,100,255,.3)}50%{box-shadow:0 0 20px rgba(150,100,255,.6),0 0 40px rgba(120,80,200,.3)}}
+.scene-bg{width:100%;max-width:900px;border-radius:12px;border:3px solid #3a2a1a;box-shadow:0 0 30px rgba(0,0,0,.8);margin-bottom:20px}
+.story-box{background:linear-gradient(135deg,rgba(30,20,10,.95),rgba(50,35,20,.9));border:2px solid #8b6914;border-radius:12px;padding:24px;margin:15px 0;max-width:860px;width:100%;line-height:1.9;font-size:16px;position:relative}
+.story-box::before{content:'📜';position:absolute;top:-15px;left:20px;font-size:28px}
+.npc-dialog{display:flex;gap:16px;align-items:flex-start;background:linear-gradient(135deg,rgba(20,15,40,.95),rgba(40,25,60,.9));border:2px solid #6a4aaa;border-radius:12px;padding:20px;margin:15px 0;max-width:860px;width:100%}
+.npc-avatar{width:80px;height:80px;border-radius:50%;border:3px solid #9b7ad8;object-fit:cover;flex-shrink:0;font-size:60px;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#2a1a4a,#3a2a5a)}
+.npc-text{flex:1;line-height:1.8;font-size:15px}
+.npc-name{color:#c9a0ff;font-weight:700;font-size:17px;margin-bottom:6px}
+.puzzle-box{background:linear-gradient(135deg,rgba(10,25,20,.95),rgba(20,40,35,.9));border:2px solid #2a8a5a;border-radius:12px;padding:24px;margin:15px 0;max-width:860px;width:100%;animation:glow 3s infinite}
+.puzzle-box.exam-mode{border-color:#ff6b35;animation:glowPurple 3s infinite;background:linear-gradient(135deg,rgba(25,10,30,.95),rgba(40,20,50,.9))}
+.puzzle-title{font-size:20px;color:#5aff9a;font-weight:700;margin-bottom:15px;display:flex;align-items:center;gap:8px}
+.puzzle-title::before{content:'⚗️';font-size:24px}
+.puzzle-box.exam-mode .puzzle-title{color:#ff9a5a}
+.puzzle-box.exam-mode .puzzle-title::before{content:'📝'}
+.puzzle-question{font-size:16px;line-height:1.9;margin-bottom:20px}
+.options{display:flex;flex-direction:column;gap:10px}
+.option-btn{background:linear-gradient(135deg,rgba(40,30,15,.9),rgba(60,45,25,.8));border:2px solid #5a4a2a;color:#e8dcc8;padding:14px 20px;border-radius:8px;font-size:15px;cursor:pointer;transition:all .3s;text-align:left;font-family:'Noto Serif TC',serif;line-height:1.6}
+.option-btn:hover{border-color:#ffd700;background:linear-gradient(135deg,rgba(60,45,20,.9),rgba(80,60,30,.8));transform:translateX(5px)}
+.option-btn.correct{border-color:#2aff5a;background:rgba(0,80,30,.4);animation:none}
+.option-btn.wrong{border-color:#ff3a3a;background:rgba(80,0,0,.4);animation:shake .5s}
+.option-btn.disabled{pointer-events:none;opacity:.6}
+.feedback{margin-top:15px;padding:16px;border-radius:8px;font-size:15px;line-height:1.8;display:none}
+.feedback.show{display:block;animation:fadeIn .5s}
+.feedback.success{background:rgba(0,80,30,.3);border:1px solid #2aff5a;color:#8affb0}
+.feedback.fail{background:rgba(80,0,0,.3);border:1px solid #ff3a3a;color:#ff8a8a}
+.action-btn{background:linear-gradient(135deg,#8b6914,#c9960a);color:#1a1000;border:none;padding:14px 36px;border-radius:8px;font-size:17px;font-weight:700;cursor:pointer;font-family:'Noto Serif TC',serif;transition:all .3s;margin-top:15px}
+.action-btn:hover{transform:scale(1.05);box-shadow:0 0 20px rgba(255,215,0,.5)}
+.progress-bar{width:100%;max-width:860px;height:8px;background:rgba(255,255,255,.1);border-radius:4px;margin:10px 0;overflow:hidden}
+.progress-fill{height:100%;background:linear-gradient(90deg,#ffd700,#ff8c00);border-radius:4px;transition:width .5s ease}
+.status-bar{display:flex;justify-content:space-between;width:100%;max-width:860px;font-size:14px;color:#aaa;margin-bottom:10px;flex-wrap:wrap;gap:8px}
+.timer{color:#ff8c00;font-weight:700;font-size:18px}
+.hp-bar{display:flex;align-items:center;gap:6px}
+.hp-heart{color:#ff3a3a;font-size:20px}
+.hp-heart.lost{color:#333}
+.title-screen{text-align:center;justify-content:center}
+.game-title{font-family:'MedievalSharp','Noto Serif TC',serif;font-size:48px;color:#ffd700;animation:pulse 2s infinite;margin-bottom:10px}
+.game-subtitle{font-size:18px;color:#aaa;margin-bottom:30px}
+.katex-display{margin:12px 0;overflow-x:auto}
+.hint-btn{background:rgba(100,80,40,.5);border:1px solid #8b6914;color:#ddd;padding:8px 16px;border-radius:6px;cursor:pointer;font-size:13px;font-family:'Noto Serif TC',serif;margin-top:10px;transition:all .3s}
+.hint-btn:hover{background:rgba(140,110,50,.6)}
+.hint-text{color:#ffcc66;font-size:14px;margin-top:8px;display:none;line-height:1.7}
+.score-display{font-size:60px;color:#ffd700;font-weight:900;animation:pulse 2s infinite}
+.result-detail{text-align:left;max-width:600px;margin:20px auto}
+.result-item{padding:8px 0;border-bottom:1px solid rgba(255,255,255,.1);display:flex;justify-content:space-between}
+.exam-badge{display:inline-block;background:linear-gradient(135deg,#ff6b35,#ff3a6b);color:#fff;font-size:11px;padding:3px 10px;border-radius:12px;margin-left:8px;font-weight:700;letter-spacing:1px;vertical-align:middle}
+.chapter-badge{display:inline-block;background:rgba(100,80,200,.3);border:1px solid #8a6aff;color:#c9b0ff;font-size:11px;padding:2px 8px;border-radius:6px;margin-top:8px}
+.mode-selector{display:flex;gap:15px;margin:20px 0;flex-wrap:wrap;justify-content:center}
+.mode-btn{background:linear-gradient(135deg,rgba(40,30,15,.9),rgba(60,45,25,.8));border:2px solid #5a4a2a;color:#e8dcc8;padding:18px 28px;border-radius:12px;font-size:16px;cursor:pointer;transition:all .3s;font-family:'Noto Serif TC',serif;text-align:center;min-width:200px}
+.mode-btn:hover{border-color:#ffd700;transform:translateY(-3px);box-shadow:0 8px 25px rgba(255,215,0,.2)}
+.mode-btn .mode-icon{font-size:36px;display:block;margin-bottom:8px}
+.mode-btn .mode-title{font-weight:700;font-size:18px;color:#ffd700}
+.mode-btn .mode-desc{font-size:13px;color:#aaa;margin-top:5px}
+.room-indicator{background:rgba(255,107,53,.15);border:1px solid #ff6b35;border-radius:8px;padding:8px 16px;margin:10px 0;font-size:13px;color:#ffaa80;text-align:center;max-width:860px;width:100%}
+</style>
+</head>
+<body>
+<div class="game-container" id="game">
+<div class="scene active title-screen" id="scene-title">
+  <div class="game-title">⚗️ 煉金術師的密室</div>
+  <div class="game-subtitle">— 化學知識密室逃脫 · 會考強化版 —</div>
+  <div class="story-box" style="text-align:center">
+    <p>公元 1348 年，黑死病肆虐歐洲。傳說中的煉金術大師<strong style="color:#ffd700">「艾爾瑪·赫密斯」</strong>在他的地下密室中，留下了能治癒一切瘟疫的「賢者之石」配方。</p><br>
+    <p>你誤闖了這座被封印千年的地下實驗室，大門在你身後轟然關閉。唯一的出路，是破解煉金術師留下的化學謎題。</p><br>
+    <p style="color:#ff6666">⚠️ 你只有 <strong>3 條命</strong>，答錯 3 題即永遠困在密室中！</p>
+  </div>
+  <div class="mode-selector">
+    <button class="mode-btn" onclick="startGame('classic')"><span class="mode-icon">🏰</span><span class="mode-title">經典模式</span><span class="mode-desc">原創 5 關化學謎題<br>適合暖身練習</span></button>
+    <button class="mode-btn" onclick="startGame('exam')"><span class="mode-icon">📝</span><span class="mode-title">會考挑戰</span><span class="mode-desc">10 題會考真題<br>酸鹼·電解質·有機·莫耳</span></button>
+    <button class="mode-btn" onclick="startGame('full')"><span class="mode-icon">⚔️</span><span class="mode-title">完整挑戰</span><span class="mode-desc">全部 15 關<br>經典 + 會考聯合闖關</span></button>
+  </div>
+</div>
+<div class="scene" id="scene-game">
+  <div class="status-bar"><div class="hp-bar" id="hp-bar"><span style="color:#aaa">生命：</span><span class="hp-heart" id="hp1">❤️</span><span class="hp-heart" id="hp2">❤️</span><span class="hp-heart" id="hp3">❤️</span></div><div>關卡：<span id="stage-num">1</span> / <span id="total-stages">5</span></div><div class="timer">⏱ <span id="timer">00:00</span></div></div>
+  <div class="progress-bar"><div class="progress-fill" id="progress" style="width:0%"></div></div>
+  <div class="room-indicator" id="room-indicator" style="display:none"></div>
+  <div class="npc-dialog" id="npc-box"><div class="npc-avatar" id="npc-avatar">🧙</div><div><div class="npc-name">煉金術師 · 赫密斯</div><div class="npc-text" id="npc-text"></div></div></div>
+  <div class="puzzle-box" id="puzzle-box"><div class="puzzle-title" id="puzzle-title"></div><div class="puzzle-question" id="puzzle-question"></div><div class="options" id="options"></div><button class="hint-btn" id="hint-btn" onclick="showHint()">💡 請求提示（-50分）</button><div class="hint-text" id="hint-text"></div><div class="feedback" id="feedback"></div></div>
+  <button class="action-btn" id="next-btn" style="display:none" onclick="nextStage()">➡️ 前往下一關</button>
+</div>
+<div class="scene" id="scene-victory" style="text-align:center">
+  <div class="game-title" style="font-size:36px">🏆 成功逃脫！</div>
+  <div style="margin:10px 0;font-size:16px;color:#aaa">你破解了煉金術師的所有謎題，找到了賢者之石的配方！</div>
+  <div class="score-display" id="final-score">0</div>
+  <div style="color:#aaa;font-size:14px">最終得分</div>
+  <div style="margin:10px 0;font-size:15px">⏱ 完成時間：<span id="final-time" style="color:#ffd700"></span></div>
+  <div id="accuracy-display" style="margin:8px 0;font-size:15px"></div>
+  <div class="result-detail" id="result-detail"></div>
+  <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:15px"><button class="action-btn" onclick="location.reload()">🔄 再次挑戰</button></div>
+</div>
+<div class="scene" id="scene-gameover" style="text-align:center;justify-content:center">
+  <div class="game-title" style="color:#ff3a3a;font-size:36px">💀 永困密室</div>
+  <div class="story-box" style="text-align:center;border-color:#ff3a3a"><p>你的生命耗盡了……煉金術師的密室將你永遠封印。</p><p style="margin-top:10px">也許下次，帶著更多化學知識再來挑戰吧。</p></div>
+  <div style="color:#aaa;margin:10px 0">最終得分：<span id="go-score" style="color:#ff8c00;font-size:24px"></span></div>
+  <button class="action-btn" onclick="location.reload()" style="background:linear-gradient(135deg,#8b1414,#c93a0a)">🔄 重新挑戰</button>
+</div>
+</div>
+<script>
+const CLASSIC_PUZZLES=[{stage:1,room:"🔥 燃燒實驗室",title:"第一關：燃燒的真相",npc:"年輕人，你踏入了我的領域。要打開第一道封印，你必須理解<strong style='color:#ffd700'>氧化反應</strong>的本質。在我的時代，人們以為燃燒是「燃素」在逃逸……但真相遠比那複雜。",question:"<p>煉金術師的筆記上記載著四種現象。以下哪一個選項中的<strong>所有現象</strong>都屬於氧化反應？</p><p style='margin-top:10px;color:#aaa'>（提示：氧化反應是指物質與氧結合的反應）</p>",options:["(A) 鐵釘生鏽、木炭燃燒、食鹽溶於水","(B) 蘋果切面變褐、鋼絲絨燃燒、鐵釘生鏽","(C) 冰塊融化、鎂帶燃燒、銅片表面變綠","(D) 木炭燃燒、酒精蒸發、鐵粉與硫粉混合加熱"],correct:1,explanation:"<strong>正確答案：(B)</strong><br><br>蘋果切面變褐（多酚氧化）、鋼絲絨燃燒（鐵與氧劇烈反應）、鐵釘生鏽（鐵緩慢氧化）都是氧化反應。<br>食鹽溶於水、冰塊融化、酒精蒸發都是物理變化。",latex:["3Fe + 2O_2 \\rightarrow Fe_3O_4"],hint:"食鹽溶於水、冰塊融化和酒精蒸發都是物理變化，不涉及與氧的化學反應。",points:200},{stage:2,room:"⚒️ 冶煉工坊",title:"第二關：金屬的序列",npc:"很好，你通過了第一道考驗。現在來到我的<strong style='color:#ff8c00'>冶煉工坊</strong>。不同的金屬對氧有不同的「渴望」——有些迫不及待要與氧結合，有些卻冷淡以對。",question:"<p>「將鎂帶、鐵釘、銅片、金箔分別加熱。鎂帶劇烈燃燒發出白光；鐵釘表面逐漸變黑；銅片表面緩慢出現黑色氧化物；金箔完全不受影響。」</p><p>根據此實驗，這四種金屬對氧活性大小的排列，何者正確？</p>",options:["(A) 金 > 銅 > 鐵 > 鎂","(B) 鎂 > 銅 > 鐵 > 金","(C) 鎂 > 鐵 > 銅 > 金","(D) 鐵 > 鎂 > 金 > 銅"],correct:2,explanation:"<strong>正確答案：(C)</strong><br><br>反應越劇烈 → 活性越大。鎂劇烈燃燒 > 鐵逐漸變黑 > 銅緩慢氧化 > 金不反應。",latex:["2Mg + O_2 \\rightarrow 2MgO","2Cu + O_2 \\rightarrow 2CuO"],hint:"反應越劇烈，表示該金屬對氧的活性越大。金是最不易氧化的金屬。",points:200},{stage:3,room:"⚖️ 還原密室",title:"第三關：還原的奧義",npc:"第三道封印涉及我畢生研究的核心——<strong style='color:#5aff9a'>氧化還原反應</strong>。記住：氧化與還原如同光與影，永遠同時存在！",question:"<p>煉金術師的冶煉銅配方：</p><div id='eq-redox' style='text-align:center;margin:15px 0;font-size:18px'></div><p>關於此反應，下列敘述何者<strong style='color:#ff6666'>錯誤</strong>？</p>",latexInQuestion:"CuO + C \\rightarrow Cu + CO_2",options:["(A) 碳 (C) 是還原劑，發生氧化反應","(B) 氧化銅 (CuO) 發生還原反應，失去氧","(C) 碳的活性大於銅，所以能將銅還原出來","(D) 碳 (C) 發生還原反應，氧化銅 (CuO) 發生氧化反應"],correct:3,explanation:"<strong>正確答案：(D) 此敘述錯誤</strong><br><br>碳與氧結合 → 被氧化（是還原劑）。氧化銅失去氧 → 被還原。選項 (D) 把氧化和還原說反了！",latex:["C + O \\rightarrow CO_2 \\text{（碳被氧化）}","CuO - O \\rightarrow Cu \\text{（氧化銅被還原）}"],hint:"「氧化」是得到氧，「還原」是失去氧。看的是氧的得失方向。",points:200},{stage:4,room:"⚡ 電解質研究室",title:"第四關：離子的密語",npc:"你已來到密室深處——我的<strong style='color:#00ccff'>電解質研究室</strong>。物質溶於水後會分裂成帶電的微粒！這些「離子」正是溶液能導電的關鍵。",question:"<p>五種物質的水溶液導電測試：食鹽 ✅、蔗糖 ❌、氫氧化鈉 ✅、酒精 ❌、鹽酸 ✅。</p><p>下列關於電解質的推論，何者正確？</p>",options:["(A) 能溶於水的物質都是電解質","(B) 食鹽、氫氧化鈉、鹽酸為電解質，溶於水後會解離出可自由移動的離子","(C) 蔗糖不導電是因為它不溶於水","(D) 電解質導電的原因與金屬導電相同，都是靠自由電子"],correct:1,explanation:"<strong>正確答案：(B)</strong><br><br>電解質溶於水後會解離成陽離子和陰離子。蔗糖和酒精能溶但不解離，故不是電解質。電解質靠離子導電，金屬靠自由電子導電。",latex:["NaCl \\rightarrow Na^+ + Cl^-","HCl \\rightarrow H^+ + Cl^-"],hint:"電解質的關鍵不是「能不能溶」，而是溶解後「會不會解離出離子」。",points:200},{stage:5,room:"🗝️ 賢者之石密室",title:"第五關：賢者之石的配方",npc:"最後的封印！你必須綜合運用所有化學知識。氧化還原、金屬活性、電解質……所有知識缺一不可！",question:"<p>四支試管分別進行實驗：<br>甲：鋅片放入硫酸銅水溶液<br>乙：銅片放入硝酸銀水溶液<br>丙：銅片放入硫酸鋅水溶液<br>丁：鐵片放入鹽酸</p><p>已知活性：鋅 > 鐵 > 銅 > 銀。下列何者<strong>正確</strong>？</p>",options:["(A) 四支試管都會發生化學反應","(B) 試管甲中，鋅被還原、銅被氧化","(C) 試管丙不會反應，因為銅的活性小於鋅","(D) 試管丁中，鐵片放入鹽酸後不會產生氣泡"],correct:2,explanation:"<strong>正確答案：(C)</strong><br><br>活性小的金屬（銅）無法將活性大的金屬（鋅）從其化合物中置換出來，所以試管丙不會反應。",latex:["Zn + CuSO_4 \\rightarrow ZnSO_4 + Cu","Fe + 2HCl \\rightarrow FeCl_2 + H_2\\uparrow"],hint:"金屬置換反應：活性大的金屬可以置換活性小的金屬，反之不行。",points:300}];
+const EXAM_PUZZLES=[{stage:1,room:"🧪 酸鹼中和實驗室",isExam:true,examSource:"會考常考題型",knowledgePoint:"酸鹼鹽 > 酸鹼中和",title:"會考第一關：酸鹼中和的本質",npc:"歡迎來到<strong style='color:#ff6b35'>會考挑戰區</strong>！第一題考的是<strong style='color:#ffd700'>酸鹼中和反應</strong>的核心概念。什麼條件下才算「完全中和」？",question:"<p>將氫氧化鈉水溶液逐滴加入鹽酸中，下列敘述何者正確？</p>",options:["(A) 中和反應會放熱","(B) 完全中和時，溶液一定呈中性","(C) 中和反應後的溶液一定不導電","(D) 中和反應是吸熱反應"],correct:0,explanation:"<strong>正確答案：(A)</strong><br><br>中和反應是放熱反應。完全中和不一定呈中性（取決於酸鹼強弱）。中和後的溶液含有鹽，仍可導電。",latex:["NaOH + HCl \\rightarrow NaCl + H_2O + \\text{熱}"],hint:"中和反應的本質是 H⁺ + OH⁻ → H₂O，這個過程會釋放能量。",points:200},{stage:2,room:"🧬 有機化學密室",isExam:true,examSource:"會考常考題型",knowledgePoint:"有機化合物",title:"會考第二關：有機化合物的辨識",npc:"有機化學——碳的奇妙世界。碳原子可以形成四個共價鍵，創造出無數種化合物！",question:"<p>下列何者<strong>不是</strong>有機化合物？</p>",options:["(A) 甲烷 CH₄","(B) 乙醇 C₂H₅OH","(C) 碳酸鈣 CaCO₃","(D) 葡萄糖 C₆H₁₂O₆"],correct:2,explanation:"<strong>正確答案：(C)</strong><br><br>碳酸鈣（CaCO₃）雖含碳，但屬於無機化合物。有機化合物通常指含碳氫鍵的化合物，但CO₂、CO、碳酸鹽等例外。",latex:[],hint:"有機化合物通常含有 C-H 鍵。碳酸鹽、碳的氧化物雖含碳但屬無機物。",points:200},{stage:3,room:"⚛️ 原子結構室",isExam:true,examSource:"會考常考題型",knowledgePoint:"原子結構",title:"會考第三關：原子的組成",npc:"萬物由原子構成！但原子內部又有什麼？質子、中子、電子——三種基本粒子構成了我們的世界。",question:"<p>某原子的原子序為 11，質量數為 23。下列敘述何者正確？</p>",options:["(A) 質子數為 23","(B) 中子數為 12","(C) 電子數為 23","(D) 中子數為 11"],correct:1,explanation:"<strong>正確答案：(B)</strong><br><br>原子序 = 質子數 = 電子數 = 11。中子數 = 質量數 - 原子序 = 23 - 11 = 12。",latex:["\\text{中子數} = \\text{質量數} - \\text{原子序} = 23 - 11 = 12"],hint:"原子序等於質子數，也等於電子數。質量數等於質子數加中子數。",points:200},{stage:4,room:"🌡️ 莫耳計算室",isExam:true,examSource:"會考常考題型",knowledgePoint:"莫耳概念",title:"會考第四關：莫耳的計算",npc:"莫耳——化學家的計數單位！一莫耳包含 6.02 × 10²³ 個粒子，這個數字被稱為亞佛加厥常數。",question:"<p>水（H₂O）的分子量為 18。若有 36 克的水，下列敘述何者正確？</p>",options:["(A) 含有 1 莫耳的水分子","(B) 含有 2 莫耳的水分子","(C) 含有 6.02 × 10²³ 個水分子","(D) 含有 3 莫耳的水分子"],correct:1,explanation:"<strong>正確答案：(B)</strong><br><br>莫耳數 = 質量 ÷ 分子量 = 36 ÷ 18 = 2 莫耳。含有 2 × 6.02 × 10²³ 個水分子。",latex:["n = \\frac{m}{M} = \\frac{36}{18} = 2 \\text{ mol}"],hint:"莫耳數 = 質量（克）÷ 分子量。水的分子量是 18。",points:200},{stage:5,room:"📝 化學反應室",isExam:true,examSource:"會考常考題型",knowledgePoint:"化學反應式",title:"會考第五關：化學反應式的平衡",npc:"化學反應式必須遵守質量守恆定律——反應前後，原子的種類和數目不會改變！",question:"<p>下列化學反應式，何者已經平衡？</p>",options:["(A) H₂ + O₂ → H₂O","(B) 2H₂ + O₂ → 2H₂O","(C) Fe + O₂ → Fe₂O₃","(D) Na + H₂O → NaOH + H₂"],correct:1,explanation:"<strong>正確答案：(B)</strong><br><br>2H₂ + O₂ → 2H₂O：左邊 4個H、2個O；右邊 4個H、2個O。原子數相等，已平衡。",latex:["2H_2 + O_2 \\rightarrow 2H_2O"],hint:"平衡的反應式，左右兩邊每種原子的數目必須相同。",points:200},{stage:6,room:"🧪 溶液濃度室",isExam:true,examSource:"會考常考題型",knowledgePoint:"溶液與濃度",title:"會考第六關：溶液的濃度",npc:"濃度——衡量溶液中溶質多寡的重要指標。重量百分濃度是最基本的表示方法。",question:"<p>將 20 克的食鹽溶於 80 克的水中，所得溶液的重量百分濃度為何？</p>",options:["(A) 20%","(B) 25%","(C) 15%","(D) 80%"],correct:0,explanation:"<strong>正確答案：(A)</strong><br><br>重量百分濃度 = 溶質質量 ÷ 溶液質量 × 100% = 20 ÷ (20+80) × 100% = 20%",latex:["\\text{濃度} = \\frac{20}{20+80} \\times 100\\% = 20\\%"],hint:"重量百分濃度 = 溶質 ÷ (溶質+溶劑) × 100%",points:200},{stage:7,room:"💊 酸鹼指示劑室",isExam:true,examSource:"會考常考題型",knowledgePoint:"酸鹼指示劑",title:"會考第七關：pH值與指示劑",npc:"pH值——衡量溶液酸鹼性的標尺。pH < 7 為酸性，pH = 7 為中性，pH > 7 為鹼性。",question:"<p>下列溶液的 pH 值，何者為鹼性？</p>",options:["(A) pH = 3","(B) pH = 7","(C) pH = 5","(D) pH = 9"],correct:3,explanation:"<strong>正確答案：(D)</strong><br><br>pH > 7 為鹼性。pH = 9 > 7，所以是鹼性溶液。pH = 3 和 pH = 5 為酸性，pH = 7 為中性。",latex:[],hint:"pH > 7 為鹼性，pH < 7 為酸性，pH = 7 為中性。",points:200},{stage:8,room:"🔬 電解實驗室",isExam:true,examSource:"會考常考題型",knowledgePoint:"電解與電鍍",title:"會考第八關：電解水實驗",npc:"電解水——用電能將水分解成氫氣和氧氣。這個實驗證明了水是由氫和氧組成的化合物！",question:"<p>電解水實驗中，正極和負極分別產生什麼氣體？體積比為何？</p>",options:["(A) 正極產生氫氣，負極產生氧氣，體積比 2:1","(B) 正極產生氧氣，負極產生氫氣，體積比 1:2","(C) 正極產生氧氣，負極產生氫氣，體積比 2:1","(D) 正極和負極都產生氫氣"],correct:1,explanation:"<strong>正確答案：(B)</strong><br><br>電解水：正極（陽極）產生氧氣，負極（陰極）產生氫氣。氧氣：氫氣 = 1:2（體積比）。",latex:["2H_2O \\rightarrow 2H_2\\uparrow + O_2\\uparrow"],hint:"記住口訣：「正氧負氫」。氫氣體積是氧氣的兩倍。",points:200},{stage:9,room:"🧪 沉澱反應室",isExam:true,examSource:"會考常考題型",knowledgePoint:"沉澱反應",title:"會考第九關：沉澱反應",npc:"當兩種溶液混合時，如果生成不溶於水的固體，就會產生沉澱！這是離子反應的重要應用。",question:"<p>將硝酸銀水溶液加入氯化鈉水溶液中，會產生什麼現象？</p>",options:["(A) 產生白色沉澱","(B) 產生藍色沉澱","(C) 無明顯現象","(D) 產生氣泡"],correct:0,explanation:"<strong>正確答案：(A)</strong><br><br>硝酸銀 + 氯化鈉 → 氯化銀（白色沉澱）+ 硝酸鈉。氯化銀不溶於水，會產生白色沉澱。",latex:["AgNO_3 + NaCl \\rightarrow AgCl\\downarrow + NaNO_3"],hint:"銀離子遇到氯離子會生成不溶於水的氯化銀白色沉澱。",points:200},{stage:10,room:"💎 質量守恆室",isExam:true,examSource:"會考常考題型",knowledgePoint:"質量守恆定律",title:"會考第十關：質量守恆定律",npc:"最後一關！質量守恆定律是化學的基石——化學反應前後，物質的總質量不會改變！",question:"<p>在密閉容器中，12 克的碳完全燃燒後，生成 44 克的二氧化碳。參與反應的氧氣質量為何？</p>",options:["(A) 12 克","(B) 44 克","(C) 32 克","(D) 56 克"],correct:2,explanation:"<strong>正確答案：(C)</strong><br><br>根據質量守恆：碳 + 氧氣 = 二氧化碳。12 + 氧氣 = 44，所以氧氣 = 44 - 12 = 32 克。",latex:["C + O_2 \\rightarrow CO_2","12g + O_2 = 44g \\Rightarrow O_2 = 32g"],hint:"質量守恆：反應物總質量 = 生成物總質量。",points:300}];
+let PUZZLES=[],currentStage=0,score=0,hp=3,seconds=0,timerInterval,hintUsed=[],results=[];
+function startGame(mode){document.getElementById('scene-title').classList.remove('active');document.getElementById('scene-game').classList.add('active');if(mode==='classic')PUZZLES=[...CLASSIC_PUZZLES];else if(mode==='exam')PUZZLES=[...EXAM_PUZZLES];else PUZZLES=[...CLASSIC_PUZZLES,...EXAM_PUZZLES];currentStage=0;score=0;hp=3;seconds=0;hintUsed=[];results=[];timerInterval=setInterval(()=>{seconds++;const m=String(Math.floor(seconds/60)).padStart(2,'0');const s=String(seconds%60).padStart(2,'0');document.getElementById('timer').textContent=m+':'+s},1000);loadStage(0)}
+function loadStage(idx){currentStage=idx;const p=PUZZLES[idx];document.getElementById('stage-num').textContent=p.stage;document.getElementById('total-stages').textContent=PUZZLES.length;document.getElementById('progress').style.width=(idx/PUZZLES.length*100)+'%';document.getElementById('npc-text').innerHTML=p.npc;const roomEl=document.getElementById('room-indicator');if(p.room){roomEl.style.display='block';let roomHTML=p.room;if(p.isExam)roomHTML+=' <span class="exam-badge">會考真題</span>';if(p.knowledgePoint)roomHTML+='<br><span class="chapter-badge">📚 '+p.knowledgePoint+'</span>';roomEl.innerHTML=roomHTML}else{roomEl.style.display='none'}const puzzleBox=document.getElementById('puzzle-box');if(p.isExam)puzzleBox.classList.add('exam-mode');else puzzleBox.classList.remove('exam-mode');document.getElementById('puzzle-title').textContent=p.title;document.getElementById('puzzle-question').innerHTML=p.question;if(p.latexInQuestion){setTimeout(()=>{const el=document.getElementById('eq-redox');if(el)katex.render(p.latexInQuestion,el,{displayMode:true,throwOnError:false})},100)}const optBox=document.getElementById('options');optBox.innerHTML='';p.options.forEach((opt,i)=>{const btn=document.createElement('button');btn.className='option-btn';btn.textContent=opt;btn.onclick=()=>checkAnswer(i,btn);optBox.appendChild(btn)});document.getElementById('feedback').className='feedback';document.getElementById('feedback').style.display='none';document.getElementById('next-btn').style.display='none';document.getElementById('hint-btn').style.display='inline-block';document.getElementById('hint-text').style.display='none';window.scrollTo({top:0,behavior:'smooth'})}
+function checkAnswer(idx,btn){const p=PUZZLES[currentStage];document.querySelectorAll('.option-btn').forEach(b=>b.classList.add('disabled'));const fb=document.getElementById('feedback');if(idx===p.correct){btn.classList.add('correct');let pts=p.points;if(hintUsed.includes(currentStage))pts-=50;score+=pts;fb.className='feedback success show';let html='<strong>✅ 正確！ +'+pts+'分</strong>';if(p.isExam&&p.examSource)html+=' <span class="exam-badge">'+p.examSource+'</span>';html+='<br><br>'+p.explanation;if(p.latex&&p.latex.length>0){html+='<div style="margin-top:12px">';p.latex.forEach((eq,i)=>{html+='<div id="latex-'+currentStage+'-'+i+'" style="margin:8px 0;text-align:center"></div>'});html+='</div>'}fb.innerHTML=html;setTimeout(()=>{if(p.latex){p.latex.forEach((eq,i)=>{const el=document.getElementById('latex-'+currentStage+'-'+i);if(el)katex.render(eq,el,{displayMode:true,throwOnError:false})})}},100);results.push({stage:p.stage,title:p.title,correct:true,points:pts,isExam:p.isExam});document.getElementById('next-btn').style.display='inline-block';document.getElementById('hint-btn').style.display='none'}else{btn.classList.add('wrong');hp--;updateHP();if(hp<=0){setTimeout(()=>gameOver(),1000);return}fb.className='feedback fail show';let html='<strong>❌ 答錯了！ -1❤️（剩餘 '+hp+' 條命）</strong>';if(p.isExam&&p.examSource)html+=' <span class="exam-badge">'+p.examSource+'</span>';html+='<br><br>'+p.explanation;if(p.latex&&p.latex.length>0){html+='<div style="margin-top:12px">';p.latex.forEach((eq,i)=>{html+='<div id="latex-'+currentStage+'-'+i+'" style="margin:8px 0;text-align:center"></div>'});html+='</div>'}fb.innerHTML=html;setTimeout(()=>{if(p.latex){p.latex.forEach((eq,i)=>{const el=document.getElementById('latex-'+currentStage+'-'+i);if(el)katex.render(eq,el,{displayMode:true,throwOnError:false})})}},100);document.querySelectorAll('.option-btn')[p.correct].classList.add('correct');results.push({stage:p.stage,title:p.title,correct:false,points:0,isExam:p.isExam});document.getElementById('next-btn').style.display='inline-block';document.getElementById('hint-btn').style.display='none'}fb.scrollIntoView({behavior:'smooth',block:'nearest'})}
+function showHint(){if(!hintUsed.includes(currentStage))hintUsed.push(currentStage);const p=PUZZLES[currentStage];const ht=document.getElementById('hint-text');ht.textContent='💡 '+p.hint;ht.style.display='block';document.getElementById('hint-btn').style.display='none'}
+function updateHP(){for(let i=1;i<=3;i++){const el=document.getElementById('hp'+i);if(i>hp){el.textContent='🖤';el.classList.add('lost')}}}
+function nextStage(){if(currentStage+1>=PUZZLES.length)victory();else loadStage(currentStage+1)}
+function victory(){clearInterval(timerInterval);document.getElementById('scene-game').classList.remove('active');document.getElementById('scene-victory').classList.add('active');document.getElementById('final-score').textContent=score;const m=String(Math.floor(seconds/60)).padStart(2,'0');const s=String(seconds%60).padStart(2,'0');document.getElementById('final-time').textContent=m+':'+s;const correctCount=results.filter(r=>r.correct).length;const totalCount=results.length;const accuracy=Math.round(correctCount/totalCount*100);const examCorrect=results.filter(r=>r.isExam&&r.correct).length;const examTotal=results.filter(r=>r.isExam).length;let accHTML='📊 正確率：<span style="color:#ffd700">'+accuracy+'%</span>（'+correctCount+'/'+totalCount+'）';if(examTotal>0)accHTML+='<br>📝 會考題正確率：<span style="color:#ff9a5a">'+Math.round(examCorrect/examTotal*100)+'%</span>（'+examCorrect+'/'+examTotal+'）';document.getElementById('accuracy-display').innerHTML=accHTML;let detailHTML='';results.forEach(r=>{detailHTML+='<div class="result-item"><span>'+(r.correct?'✅':'❌')+' '+r.title+(r.isExam?' <span class="exam-badge" style="font-size:10px">會考</span>':'')+'</span><span style="color:'+(r.correct?'#5aff9a':'#ff5555')+'">'+r.points+'分</span></div>'});document.getElementById('result-detail').innerHTML=detailHTML;document.getElementById('progress').style.width='100%'}
+function gameOver(){clearInterval(timerInterval);document.getElementById('scene-game').classList.remove('active');document.getElementById('scene-gameover').classList.add('active');document.getElementById('go-score').textContent=score}
+</script>
+</body>
+</html>
